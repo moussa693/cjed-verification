@@ -7,72 +7,99 @@
 
 <style>
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f4f7f9;
-  color:#222;
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f7f9;
+    color:#222;
 }
+
 .container{
-  max-width:500px;
-  margin:auto;
-  padding:25px 18px;
+    max-width:500px;
+    margin:auto;
+    padding:25px 18px;
 }
+
 .logo{
-  text-align:center;
-  font-size:28px;
-  font-weight:bold;
-  color:#0b6b4f;
-  margin-bottom:10px;
+    text-align:center;
+    font-size:48px;
+    font-weight:bold;
+    color:#08745b;
+    margin-bottom:10px;
 }
+
 .subtitle{
-  text-align:center;
-  color:#666;
-  margin-bottom:25px;
+    text-align:center;
+    color:#666;
+    font-size:22px;
+    margin-bottom:35px;
 }
-.box{
-  background:white;
-  padding:25px;
-  border-radius:18px;
-  box-shadow:0 4px 15px rgba(0,0,0,.08);
-}
-input{
-  width:100%;
-  box-sizing:border-box;
-  padding:15px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  font-size:16px;
-  margin-bottom:12px;
-}
-button{
-  width:100%;
-  padding:15px;
-  border:0;
-  border-radius:10px;
-  background:#0b6b4f;
-  color:white;
-  font-size:16px;
-  font-weight:bold;
-}
-.result{
-  margin-top:20px;
-}
+
 .card{
-  border:1px solid #ddd;
-  border-radius:15px;
-  padding:20px;
-  background:#fff;
+    background:white;
+    border-radius:28px;
+    padding:35px 28px;
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
 }
-.valid{
-  color:#16803c;
-  font-weight:bold;
+
+h1{
+    font-size:40px;
+    margin-top:0;
+    margin-bottom:35px;
 }
-.invalid{
-  color:#d00000;
-  font-weight:bold;
+
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:22px;
+    font-size:20px;
+    border:2px solid #ccc;
+    border-radius:20px;
+    margin-bottom:18px;
 }
+
+button{
+    width:100%;
+    padding:21px;
+    border:0;
+    border-radius:20px;
+    background:#08745b;
+    color:white;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.result{
+    margin-top:35px;
+    padding:28px;
+    border:2px solid #ddd;
+    border-radius:25px;
+    background:#fff;
+}
+
+.success{
+    color:#16863c;
+    font-size:25px;
+    font-weight:bold;
+    margin-bottom:25px;
+}
+
+.error{
+    color:#c62828;
+    font-size:20px;
+    font-weight:bold;
+}
+
 .info{
-  margin:8px 0;
+    font-size:19px;
+    line-height:1.8;
+}
+
+.info strong{
+    color:#222;
+}
+
+.hidden{
+    display:none;
 }
 </style>
 </head>
@@ -81,124 +108,177 @@ button{
 
 <div class="container">
 
-<div class="logo">CJED</div>
-<div class="subtitle">
-Vérification officielle des membres
-</div>
+    <div class="logo">CJED</div>
 
-<div class="box">
+    <div class="subtitle">
+        Vérification officielle des membres
+    </div>
 
-<h2>Vérifier un membre</h2>
+    <div class="card">
 
-<input
-  type="text"
-  id="memberId"
-  placeholder="Entrez le numéro du membre"
->
+        <h1>Vérifier un membre</h1>
 
-<button onclick="verifier()">
-VÉRIFIER
-</button>
+        <input
+            type="text"
+            id="memberId"
+            placeholder="Entrez le numéro du membre"
+        >
 
-<div id="result" class="result"></div>
+        <button onclick="verifierMembre()">
+            VÉRIFIER
+        </button>
 
-</div>
+        <div id="result" class="result hidden"></div>
+
+    </div>
+
 </div>
 
 <script>
 
-const URL_MEMBRES =
-"https://raw.githubusercontent.com/moussa693/cjed-membres/main/members.json";
+const idDepuisURL =
+    new URLSearchParams(window.location.search).get("id");
 
-async function verifier(){
-
-const id = document
-.getElementById("memberId")
-.value
-.trim();
-
-const result = document.getElementById("result");
-
-if(!id){
-result.innerHTML =
-'<p class="invalid">❌ Veuillez entrer un numéro de membre.</p>';
-return;
+if(idDepuisURL){
+    document.getElementById("memberId").value = idDepuisURL;
+    verifierMembre();
 }
 
-result.innerHTML = "Vérification en cours...";
+async function verifierMembre(){
 
-try{
+    const id =
+        document.getElementById("memberId").value.trim();
 
-const response = await fetch(URL_MEMBRES);
+    const result =
+        document.getElementById("result");
 
-if(!response.ok){
-throw new Error("Impossible de charger les membres.");
-}
+    if(!id){
+        result.classList.remove("hidden");
+        result.innerHTML =
+            '<div class="error">❌ Veuillez entrer un numéro de membre.</div>';
+        return;
+    }
 
-const membres = await response.json();
+    result.classList.remove("hidden");
+    result.innerHTML = "Vérification en cours...";
 
-const membre = membres.find(
-m => String(m.id).trim() === id
-);
+    try{
 
-if(!membre){
+        const response =
+            await fetch("members.json");
 
-result.innerHTML = `
-<div class="card">
-<p class="invalid">❌ Membre non trouvé</p>
-<p>Ce numéro de membre n'existe pas dans la base officielle du CJED.</p>
-</div>
-`;
+        if(!response.ok){
+            throw new Error("Impossible de charger les membres.");
+        }
 
-return;
-}
+        const data = await response.json();
 
-result.innerHTML = `
-<div class="card">
+        const members =
+            Array.isArray(data)
+                ? data
+                : (data.members || []);
 
-<p class="valid">✅ MEMBRE VÉRIFIÉ</p>
+        const recherche = String(id).trim().toLowerCase();
 
-<div class="info">
-<strong>Numéro :</strong> ${membre.id || ""}
-</div>
+        const membre = members.find(m => {
 
-<div class="info">
-<strong>Nom :</strong> ${membre.nom || ""}
-</div>
+            const identifiant =
+                String(
+                    m.id ||
+                    m.numero ||
+                    m.numéro ||
+                    m.memberId ||
+                    m.numeroMembre ||
+                    ""
+                ).trim().toLowerCase();
 
-<div class="info">
-<strong>Prénom :</strong> ${membre.prenom || ""}
-</div>
+            return identifiant === recherche;
+        });
 
-<div class="info">
-<strong>Fonction :</strong> ${membre.fonction || ""}
-</div>
+        if(!membre){
 
-<div class="info">
-<strong>Cellule :</strong> ${membre.cellule || ""}
-</div>
+            result.innerHTML = `
+                <div class="error">
+                    ❌ MEMBRE NON TROUVÉ
+                </div>
+                <div class="info">
+                    Aucun membre ne correspond au numéro :
+                    <strong>${id}</strong>
+                </div>
+            `;
 
-<div class="info">
-<strong>Statut :</strong> ${membre.statut || ""}
-</div>
+            return;
+        }
 
-<div class="info">
-<strong>Expiration :</strong> ${membre.expiration || ""}
-</div>
+        const nom =
+            membre.nom || membre.name || "";
 
-</div>
-`;
+        const prenom =
+            membre.prenom || membre.prénom || "";
 
-}catch(error){
+        const fonction =
+            membre.fonction || membre.function || "";
 
-result.innerHTML = `
-<p class="invalid">
-❌ Erreur lors de la vérification.
-</p>
-`;
+        const cellule =
+            membre.cellule || "";
 
-}
+        const statut =
+            membre.statut || membre.status || "";
 
+        const expiration =
+            membre.expiration ||
+            membre.validite ||
+            membre.validité ||
+            "";
+
+        result.innerHTML = `
+            <div class="success">
+                ✅ MEMBRE VÉRIFIÉ
+            </div>
+
+            <div class="info">
+
+                <strong>Numéro :</strong>
+                ${membre.id || id}
+                <br>
+
+                <strong>Nom :</strong>
+                ${nom}
+                <br>
+
+                <strong>Prénom :</strong>
+                ${prenom}
+                <br>
+
+                <strong>Fonction :</strong>
+                ${fonction}
+                <br>
+
+                <strong>Cellule :</strong>
+                ${cellule}
+                <br>
+
+                <strong>Statut :</strong>
+                ${statut}
+                <br>
+
+                <strong>Expiration :</strong>
+                ${expiration}
+
+            </div>
+        `;
+
+    }catch(error){
+
+        result.innerHTML = `
+            <div class="error">
+                ❌ ERREUR
+            </div>
+            <div class="info">
+                ${error.message}
+            </div>
+        `;
+    }
 }
 
 </script>
